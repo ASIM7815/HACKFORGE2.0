@@ -165,22 +165,7 @@
             border-top: none;
         }
 
-        /* Scanline effect */
-        .scanline {
-            position: absolute;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, 
-                transparent 0%, 
-                rgba(255, 51, 51, 0.5) 50%, 
-                transparent 100%);
-            animation: scan 8s linear infinite;
-        }
 
-        @keyframes scan {
-            0% { top: 0%; }
-            100% { top: 100%; }
-        }
 
         /* Red glow effect for header images */
         .header-glow {
@@ -333,15 +318,24 @@
         }
 
         .card-3d {
-            transition: transform 0.6s ease, box-shadow 0.6s ease;
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transform-style: preserve-3d;
+            will-change: transform;
         }
 
-        .card-3d:hover {
-            transform: rotateY(5deg) rotateX(5deg) translateZ(20px);
-            box-shadow: 0 20px 60px rgba(255, 51, 51, 0.4);
+        /* Glassmorphism with red theme */
+        .card-glass {
+            background: rgba(20, 20, 30, 0.7);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 51, 51, 0.2);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                0 2px 8px rgba(255, 51, 51, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
 
-        /* Shine effect */
+        /* Dynamic shine effect that follows mouse */
         .card-shine {
             position: relative;
             overflow: hidden;
@@ -350,22 +344,79 @@
         .card-shine::before {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(
-                45deg,
-                transparent 30%,
-                rgba(255, 255, 255, 0.1) 50%,
-                transparent 70%
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(
+                circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+                rgba(255, 51, 51, 0.15) 0%,
+                transparent 50%
             );
-            transform: translateX(-100%) translateY(-100%);
-            transition: transform 0.6s ease;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
         }
 
         .card-shine:hover::before {
-            transform: translateX(100%) translateY(100%);
+            opacity: 1;
+        }
+
+        /* Starfield background for cards */
+        .card-stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            border-radius: 1rem;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: twinkle 3s ease-in-out infinite;
+        }
+
+        .star.bright {
+            width: 3px;
+            height: 3px;
+            opacity: 0.6;
+            box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+        }
+
+        /* Center last two cards in grid */
+        @media (min-width: 1024px) {
+            #domainCards {
+                display: grid;
+                grid-template-columns: repeat(6, 1fr);
+            }
+            
+            #domainCards > div:nth-child(1) {
+                grid-column: span 2;
+            }
+            
+            #domainCards > div:nth-child(2) {
+                grid-column: span 2;
+            }
+            
+            #domainCards > div:nth-child(3) {
+                grid-column: span 2;
+            }
+            
+            #domainCards > div:nth-child(4) {
+                grid-column: 2 / span 2;
+            }
+            
+            #domainCards > div:nth-child(5) {
+                grid-column: 4 / span 2;
+            }
         }
     </style>
 </head>
@@ -373,9 +424,6 @@
     
     <!-- Main Canvas for Circuit Lines -->
     <canvas id="circuitCanvas"></canvas>
-
-    <!-- Scanline Effect -->
-    <div class="scanline"></div>
 
     <!-- Corner Tech Elements -->
     <div class="corner-tech top-left"></div>
@@ -393,52 +441,52 @@
     <div id="dataFlow"></div>
 
     <!-- Header Section -->
-    <header class="relative z-10 flex flex-col items-center justify-center pt-12">
+    <header class="relative z-10 flex flex-col items-center justify-center pt-8 md:pt-12 px-4">
         <!-- HACKFORGE 2.0 Title -->
-        <div class="inline-flex items-center gap-4 mb-16">
+        <div class="inline-flex items-center gap-2 md:gap-4 mb-8 md:mb-16">
             <!-- HACKFORGE text image with red glow -->
-            <img src="heading.png" alt="HACKFORGE" class="h-24 md:h-32 w-auto object-contain header-glow">
+            <img src="heading.png" alt="HACKFORGE" class="h-16 sm:h-20 md:h-24 lg:h-32 w-auto object-contain header-glow">
             
             <!-- 2.0 text image with lighter red glow -->
-            <img src="chitti.png" alt="2.0" class="h-20 md:h-28 w-auto object-contain header-glow-light">
+            <img src="chitti.png" alt="2.0" class="h-14 sm:h-18 md:h-20 lg:h-28 w-auto object-contain header-glow-light">
         </div>
 
         <!-- Club Logos Row -->
-        <div class="flex items-center justify-center gap-8 md:gap-12">
+        <div class="flex items-center justify-center gap-4 sm:gap-6 md:gap-8 lg:gap-12 flex-wrap">
             <!-- E Cell Logo -->
-            <img src="Pasted image (2).png" alt="E Cell" class="h-24 md:h-28 w-auto object-contain">
+            <img src="Pasted image (2).png" alt="E Cell" class="h-16 sm:h-20 md:h-24 lg:h-28 w-auto object-contain">
             
             <!-- X Separator -->
-            <span class="text-white text-3xl md:text-4xl font-bold opacity-70">X</span>
+            <span class="text-white text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold opacity-70">X</span>
             
             <!-- Microsoft Student Club Logo -->
-            <img src="Pasted image.png" alt="Microsoft Student Club" class="h-24 md:h-28 w-auto object-contain">
+            <img src="Pasted image.png" alt="Microsoft Student Club" class="h-16 sm:h-20 md:h-24 lg:h-28 w-auto object-contain">
             
             <!-- X Separator -->
-            <span class="text-white text-3xl md:text-4xl font-bold opacity-70">X</span>
+            <span class="text-white text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold opacity-70">X</span>
             
             <!-- Innovation Council Logo -->
-            <img src="Pasted image (3).png" alt="Innovation Council" class="h-24 md:h-28 w-auto object-contain">
+            <img src="Pasted image (3).png" alt="Innovation Council" class="h-16 sm:h-20 md:h-24 lg:h-28 w-auto object-contain">
         </div>
 
         <!-- Hackathon Description -->
-        <div class="mt-16 max-w-4xl mx-auto px-6 text-center">
-            <p class="text-gray-300 text-lg md:text-xl leading-relaxed mb-4">
+        <div class="mt-8 md:mt-16 max-w-4xl mx-auto px-4 md:px-6 text-center">
+            <p class="text-gray-300 text-base sm:text-lg md:text-xl leading-relaxed mb-3 md:mb-4">
                 Transform ideas into reality at <span class="text-red-500 font-semibold">HackForge 2.0</span> — where innovation meets execution. 
                 Join us on <span class="text-white font-semibold">9th April 2026</span> for a 12-hour coding marathon featuring 
                 <span class="text-red-400">₹75,000</span> in prizes across AI, IoT, Mechanical Design, and Social Impact domains.
             </p>
-            <p class="text-gray-400 text-base md:text-lg">
+            <p class="text-gray-400 text-sm sm:text-base md:text-lg">
                 Teams of 3-5 members | ₹250 per participant | ISL Engineering College
             </p>
         </div>
 
         <!-- Register Button -->
-        <div class="mt-12">
-            <button class="register-btn group relative px-12 py-4 text-xl font-bold text-white bg-gradient-to-r from-red-600 to-red-700 rounded-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(255,51,51,0.6)]">
-                <span class="relative z-10 flex items-center gap-3">
+        <div class="mt-8 md:mt-12">
+            <button class="register-btn group relative px-8 sm:px-10 md:px-12 py-3 md:py-4 text-lg sm:text-xl font-bold text-white bg-gradient-to-r from-red-600 to-red-700 rounded-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(255,51,51,0.6)]">
+                <span class="relative z-10 flex items-center gap-2 md:gap-3">
                     REGISTER NOW
-                    <svg class="w-6 h-6 transition-transform duration-300 group-hover:translate-x-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 md:w-6 md:h-6 transition-transform duration-300 group-hover:translate-x-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
                     </svg>
                 </span>
@@ -448,18 +496,18 @@
     </header>
 
     <!-- About Section -->
-    <section class="relative z-10 mt-24 px-6 max-w-6xl mx-auto">
+    <section class="relative z-10 mt-16 md:mt-24 px-4 md:px-6 max-w-6xl mx-auto">
         <!-- Section Title -->
-        <div class="text-center mb-16 animate-fadeInUp">
-            <h2 class="text-5xl md:text-6xl font-bold text-white mb-4 font-orbitron">
+        <div class="text-center mb-8 md:mb-16 animate-fadeInUp">
+            <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-3 md:mb-4 font-orbitron">
                 About the <span class="text-red-500">Hackathon</span>
             </h2>
-            <div class="w-32 h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent mx-auto"></div>
+            <div class="w-24 md:w-32 h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent mx-auto"></div>
         </div>
 
         <!-- Content -->
-        <div class="bg-gradient-to-br from-gray-900/40 to-gray-800/20 backdrop-blur-sm border border-red-500/20 rounded-2xl p-10 md:p-14 animate-fadeInUp delay-200">
-            <p class="text-gray-300 text-xl md:text-2xl leading-relaxed font-space text-center">
+        <div class="bg-gradient-to-br from-gray-900/40 to-gray-800/20 backdrop-blur-sm border border-red-500/20 rounded-2xl p-6 sm:p-8 md:p-10 lg:p-14 animate-fadeInUp delay-200">
+            <p class="text-gray-300 text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed font-space text-center">
                 An <span class="text-red-400 font-semibold">innovation-driven</span> technical event by 
                 <span class="text-white font-semibold">E-Cell</span>, 
                 <span class="text-white font-semibold">IIC</span>, and 
@@ -472,87 +520,460 @@
     </section>
 
     <!-- Domains Section -->
-    <section class="relative z-10 mt-32 px-6 max-w-7xl mx-auto">
+    <section class="relative z-10 mt-16 md:mt-32 px-4 md:px-6 max-w-7xl mx-auto">
         <!-- Section Title -->
-        <div class="text-center mb-16 animate-fadeInUp">
-            <h2 class="text-5xl md:text-6xl font-bold text-white mb-4 font-orbitron">
+        <div class="text-center mb-8 md:mb-16 animate-fadeInUp">
+            <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-3 md:mb-4 font-orbitron">
                 <span class="text-red-500">Domains</span>
             </h2>
-            <div class="w-32 h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent mx-auto mb-4"></div>
-            <p class="text-gray-400 text-lg font-space">Choose your battlefield and innovate</p>
+            <div class="w-24 md:w-32 h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent mx-auto mb-3 md:mb-4"></div>
+            <p class="text-gray-400 text-base md:text-lg font-space">Choose your battlefield and innovate</p>
         </div>
 
         <!-- Domain Cards Grid -->
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 justify-items-center" id="domainCards">
             
             <!-- Card 1: AI & Computer Science -->
             <div class="perspective-distant transform-3d w-full animate-fadeInUp delay-100">
-                <div class="card-3d card-shine bg-gradient-to-br from-gray-900/60 to-gray-800/40 backdrop-blur-sm border-2 border-red-500/30 rounded-2xl p-8 hover:border-red-500/60 transition-all duration-300 h-full">
-                    <div class="w-16 h-16 bg-red-500/20 rounded-xl flex items-center justify-center mb-6">
-                        <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                        </svg>
+                <div class="card-3d card-shine card-glass rounded-2xl p-6 md:p-8 transition-all duration-300 h-full domain-card">
+                    <!-- Starfield Background -->
+                    <div class="card-stars"></div>
+                    
+                    <!-- Card Content -->
+                    <div class="relative z-10">
+                        <div class="mb-4 md:mb-6 flex items-center justify-center">
+                            <img src="AI.png" alt="AI & Computer Science" class="w-auto h-auto max-w-full object-contain">
+                        </div>
+                        <h3 class="text-xl md:text-2xl font-bold text-white mb-2 md:mb-3 font-orbitron">AI & Computer Science</h3>
+                        <p class="text-gray-400 text-sm md:text-base font-space leading-relaxed">Build intelligent systems, machine learning models, and cutting-edge software solutions</p>
                     </div>
-                    <h3 class="text-2xl font-bold text-white mb-3 font-orbitron">AI & Computer Science</h3>
-                    <p class="text-gray-400 font-space leading-relaxed">Build intelligent systems, machine learning models, and cutting-edge software solutions</p>
                 </div>
             </div>
 
             <!-- Card 2: IoT & Embedded Systems -->
             <div class="perspective-distant transform-3d w-full animate-fadeInUp delay-200">
-                <div class="card-3d card-shine bg-gradient-to-br from-gray-900/60 to-gray-800/40 backdrop-blur-sm border-2 border-red-500/30 rounded-2xl p-8 hover:border-red-500/60 transition-all duration-300 h-full">
-                    <div class="w-16 h-16 bg-red-500/20 rounded-xl flex items-center justify-center mb-6">
-                        <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
+                <div class="card-3d card-shine card-glass rounded-2xl p-6 md:p-8 transition-all duration-300 h-full domain-card">
+                    <!-- Starfield Background -->
+                    <div class="card-stars"></div>
+                    
+                    <!-- Card Content -->
+                    <div class="relative z-10">
+                        <div class="mb-4 md:mb-6 flex items-center justify-center">
+                            <img src="IOT.jpeg" alt="IoT & Embedded Systems" class="w-auto h-auto max-w-full object-contain">
+                        </div>
+                        <h3 class="text-xl md:text-2xl font-bold text-white mb-2 md:mb-3 font-orbitron">IoT & Embedded Systems</h3>
+                        <p class="text-gray-400 text-sm md:text-base font-space leading-relaxed">Create connected devices and smart hardware solutions for real-world applications</p>
                     </div>
-                    <h3 class="text-2xl font-bold text-white mb-3 font-orbitron">IoT & Embedded Systems</h3>
-                    <p class="text-gray-400 font-space leading-relaxed">Create connected devices and smart hardware solutions for real-world applications</p>
                 </div>
             </div>
 
             <!-- Card 3: Mechanical & Smart Design -->
             <div class="perspective-distant transform-3d w-full animate-fadeInUp delay-300">
-                <div class="card-3d card-shine bg-gradient-to-br from-gray-900/60 to-gray-800/40 backdrop-blur-sm border-2 border-red-500/30 rounded-2xl p-8 hover:border-red-500/60 transition-all duration-300 h-full">
-                    <div class="w-16 h-16 bg-red-500/20 rounded-xl flex items-center justify-center mb-6">
-                        <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
+                <div class="card-3d card-shine card-glass rounded-2xl p-6 md:p-8 transition-all duration-300 h-full domain-card">
+                    <!-- Starfield Background -->
+                    <div class="card-stars"></div>
+                    
+                    <!-- Card Content -->
+                    <div class="relative z-10">
+                        <div class="mb-4 md:mb-6 flex items-center justify-center">
+                            <img src="MECHANICS.jpeg" alt="Mechanical & Smart Design" class="w-auto h-auto max-w-full object-contain">
+                        </div>
+                        <h3 class="text-xl md:text-2xl font-bold text-white mb-2 md:mb-3 font-orbitron">Mechanical & Smart Design</h3>
+                        <p class="text-gray-400 text-sm md:text-base font-space leading-relaxed">Engineer innovative mechanical systems and intelligent design solutions</p>
                     </div>
-                    <h3 class="text-2xl font-bold text-white mb-3 font-orbitron">Mechanical & Smart Design</h3>
-                    <p class="text-gray-400 font-space leading-relaxed">Engineer innovative mechanical systems and intelligent design solutions</p>
                 </div>
             </div>
 
             <!-- Card 4: Sustainable Solutions -->
             <div class="perspective-distant transform-3d w-full animate-fadeInUp delay-400">
-                <div class="card-3d card-shine bg-gradient-to-br from-gray-900/60 to-gray-800/40 backdrop-blur-sm border-2 border-red-500/30 rounded-2xl p-8 hover:border-red-500/60 transition-all duration-300 h-full">
-                    <div class="w-16 h-16 bg-red-500/20 rounded-xl flex items-center justify-center mb-6">
-                        <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
+                <div class="card-3d card-shine card-glass rounded-2xl p-6 md:p-8 transition-all duration-300 h-full domain-card">
+                    <!-- Starfield Background -->
+                    <div class="card-stars"></div>
+                    
+                    <!-- Card Content -->
+                    <div class="relative z-10">
+                        <div class="mb-4 md:mb-6 flex items-center justify-center">
+                            <img src="SUSTAINABLE.jpeg" alt="Sustainable Solutions" class="w-auto h-auto max-w-full object-contain">
+                        </div>
+                        <h3 class="text-xl md:text-2xl font-bold text-white mb-2 md:mb-3 font-orbitron">Sustainable Solutions</h3>
+                        <p class="text-gray-400 text-sm md:text-base font-space leading-relaxed">Develop eco-friendly innovations for a greener and sustainable future</p>
                     </div>
-                    <h3 class="text-2xl font-bold text-white mb-3 font-orbitron">Sustainable Solutions</h3>
-                    <p class="text-gray-400 font-space leading-relaxed">Develop eco-friendly innovations for a greener and sustainable future</p>
                 </div>
             </div>
 
             <!-- Card 5: Social Impact Innovation -->
             <div class="perspective-distant transform-3d w-full animate-fadeInUp delay-500">
-                <div class="card-3d card-shine bg-gradient-to-br from-gray-900/60 to-gray-800/40 backdrop-blur-sm border-2 border-red-500/30 rounded-2xl p-8 hover:border-red-500/60 transition-all duration-300 h-full">
-                    <div class="w-16 h-16 bg-red-500/20 rounded-xl flex items-center justify-center mb-6">
-                        <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                        </svg>
+                <div class="card-3d card-shine card-glass rounded-2xl p-6 md:p-8 transition-all duration-300 h-full domain-card">
+                    <!-- Starfield Background -->
+                    <div class="card-stars"></div>
+                    
+                    <!-- Card Content -->
+                    <div class="relative z-10">
+                        <div class="mb-4 md:mb-6 flex items-center justify-center">
+                            <img src="SOCIAL.jpeg" alt="Social Impact Innovation" class="w-auto h-auto max-w-full object-contain">
+                        </div>
+                        <h3 class="text-xl md:text-2xl font-bold text-white mb-2 md:mb-3 font-orbitron">Social Impact Innovation</h3>
+                        <p class="text-gray-400 text-sm md:text-base font-space leading-relaxed">Create solutions that address social challenges and improve lives</p>
                     </div>
-                    <h3 class="text-2xl font-bold text-white mb-3 font-orbitron">Social Impact Innovation</h3>
-                    <p class="text-gray-400 font-space leading-relaxed">Create solutions that address social challenges and improve lives</p>
                 </div>
             </div>
 
         </div>
     </section>
+
+    <!-- Event Details Section -->
+    <section id="eventDetailsSection" class="relative z-10 mt-16 md:mt-32 px-4 md:px-6 max-w-7xl mx-auto mb-16 md:mb-32">
+        <!-- Section Title -->
+        <div class="text-center mb-8 md:mb-16 animate-fadeInUp">
+            <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-3 md:mb-4 font-orbitron">
+                Event <span class="text-red-500">Details</span>
+            </h2>
+            <div class="w-24 md:w-32 h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent mx-auto"></div>
+        </div>
+
+        <!-- Main Grid Layout -->
+        <div class="grid lg:grid-cols-3 gap-4 md:gap-8">
+            
+            <!-- Left Column - Main Info -->
+            <div class="lg:col-span-2 space-y-4 md:space-y-6">
+                
+                <!-- Hero Card -->
+                <div class="card-glass rounded-2xl p-6 md:p-8 lg:p-10 card-shine animate-fadeInUp delay-100">
+                    <div class="card-stars"></div>
+                    <div class="relative z-10">
+                        <h3 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 md:mb-6 font-orbitron">
+                            <span class="text-red-400">HackForge 2.0</span>
+                        </h3>
+                        <p class="text-gray-300 text-base sm:text-lg md:text-xl leading-relaxed font-space mb-4 md:mb-6">
+                            A dynamic <span class="text-white font-semibold">one-day hackathon</span> designed to bring together 
+                            <span class="text-red-400 font-semibold">innovative minds</span> to build impactful technological solutions.
+                        </p>
+                        <div class="flex flex-wrap gap-3 md:gap-4 mt-4 md:mt-6">
+                            <div class="flex items-center gap-2 bg-red-900/20 border border-red-500/30 rounded-lg px-3 md:px-4 py-2">
+                                <svg class="w-4 h-4 md:w-5 md:h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                </svg>
+                                <span class="text-white font-space font-semibold text-sm md:text-base">Teams of 3-5</span>
+                            </div>
+                            <div class="flex items-center gap-2 bg-red-900/20 border border-red-500/30 rounded-lg px-3 md:px-4 py-2">
+                                <svg class="w-4 h-4 md:w-5 md:h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="text-white font-space font-semibold text-sm md:text-base">12 Hours</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- What to Expect -->
+                <div class="card-glass rounded-2xl p-6 md:p-8 card-shine animate-fadeInUp delay-200">
+                    <div class="card-stars"></div>
+                    <div class="relative z-10">
+                        <h4 class="text-xl md:text-2xl font-bold text-red-400 mb-3 md:mb-4 font-orbitron">What to Expect</h4>
+                        <div class="space-y-3 md:space-y-4">
+                            <div class="flex items-start gap-2 md:gap-3">
+                                <div class="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
+                                <p class="text-gray-300 text-sm sm:text-base md:text-lg font-space">
+                                    <span class="text-white font-semibold">Collaborate & Experiment:</span> Work with talented peers to transform ideas into working prototypes
+                                </p>
+                            </div>
+                            <div class="flex items-start gap-2 md:gap-3">
+                                <div class="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
+                                <p class="text-gray-300 text-sm sm:text-base md:text-lg font-space">
+                                    <span class="text-white font-semibold">Solve Real Problems:</span> Focus on real-world challenges through technology and innovation
+                                </p>
+                            </div>
+                            <div class="flex items-start gap-2 md:gap-3">
+                                <div class="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
+                                <p class="text-gray-300 text-sm sm:text-base md:text-lg font-space">
+                                    <span class="text-white font-semibold">Competitive Environment:</span> Encouraging teamwork, creativity, and problem-solving
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Domains Grid -->
+                <div class="card-glass rounded-2xl p-6 md:p-8 card-shine animate-fadeInUp delay-300">
+                    <div class="card-stars"></div>
+                    <div class="relative z-10">
+                        <h4 class="text-xl md:text-2xl font-bold text-red-400 mb-4 md:mb-6 font-orbitron">Competition Domains</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                            <div class="bg-gradient-to-br from-red-900/20 to-transparent border border-red-500/20 rounded-lg p-3 md:p-4 hover:border-red-500/40 transition-all">
+                                <h5 class="text-white font-semibold font-space mb-1 text-sm md:text-base">AI & Computer Science</h5>
+                                <p class="text-gray-400 text-xs md:text-sm font-space">Intelligent systems & ML</p>
+                            </div>
+                            <div class="bg-gradient-to-br from-red-900/20 to-transparent border border-red-500/20 rounded-lg p-3 md:p-4 hover:border-red-500/40 transition-all">
+                                <h5 class="text-white font-semibold font-space mb-1 text-sm md:text-base">IoT & Embedded Systems</h5>
+                                <p class="text-gray-400 text-xs md:text-sm font-space">Connected devices</p>
+                            </div>
+                            <div class="bg-gradient-to-br from-red-900/20 to-transparent border border-red-500/20 rounded-lg p-3 md:p-4 hover:border-red-500/40 transition-all">
+                                <h5 class="text-white font-semibold font-space mb-1 text-sm md:text-base">Mechanical & Smart Design</h5>
+                                <p class="text-gray-400 text-xs md:text-sm font-space">Engineering solutions</p>
+                            </div>
+                            <div class="bg-gradient-to-br from-red-900/20 to-transparent border border-red-500/20 rounded-lg p-3 md:p-4 hover:border-red-500/40 transition-all">
+                                <h5 class="text-white font-semibold font-space mb-1 text-sm md:text-base">Sustainable Solutions</h5>
+                                <p class="text-gray-400 text-xs md:text-sm font-space">Eco-friendly innovations</p>
+                            </div>
+                            <div class="bg-gradient-to-br from-red-900/20 to-transparent border border-red-500/20 rounded-lg p-3 md:p-4 hover:border-red-500/40 transition-all sm:col-span-2">
+                                <h5 class="text-white font-semibold font-space mb-1 text-sm md:text-base">Social Impact Innovation</h5>
+                                <p class="text-gray-400 text-xs md:text-sm font-space">Solutions for social challenges</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column - Event Info Sidebar -->
+            <div class="lg:col-span-1 space-y-4 md:space-y-6">
+                
+                <!-- Date & Time Card -->
+                <div class="card-glass rounded-2xl p-5 md:p-6 card-shine animate-fadeInUp delay-400 lg:sticky lg:top-6">
+                    <div class="card-stars"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-3 mb-3 md:mb-4">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5 md:w-6 md:h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-gray-400 text-xs md:text-sm font-space">Date</p>
+                                <p class="text-white text-lg md:text-xl font-bold font-orbitron">9 April 2026</p>
+                            </div>
+                        </div>
+                        <div class="border-t border-red-500/20 pt-3 md:pt-4 mt-3 md:mt-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 md:w-12 md:h-12 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 md:w-6 md:h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-gray-400 text-xs md:text-sm font-space">Time</p>
+                                    <p class="text-white text-base md:text-lg font-semibold font-space">9:00 AM - 9:00 PM</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location Card -->
+                <div class="card-glass rounded-2xl p-5 md:p-6 card-shine animate-fadeInUp delay-500">
+                    <div class="card-stars"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-3 mb-2 md:mb-3">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5 md:w-6 md:h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-gray-400 text-xs md:text-sm font-space">Venue</p>
+                                <p class="text-white text-base md:text-lg font-semibold font-space">ISL Engineering College</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="card-glass rounded-2xl p-5 md:p-6 card-shine animate-fadeInUp delay-600">
+                    <div class="card-stars"></div>
+                    <div class="relative z-10">
+                        <h4 class="text-base md:text-lg font-bold text-red-400 mb-3 md:mb-4 font-orbitron">Quick Stats</h4>
+                        <div class="space-y-2 md:space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400 font-space text-sm md:text-base">Duration</span>
+                                <span class="text-white font-semibold font-space text-sm md:text-base">12 Hours</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400 font-space text-sm md:text-base">Team Size</span>
+                                <span class="text-white font-semibold font-space text-sm md:text-base">3-5 Members</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400 font-space text-sm md:text-base">Domains</span>
+                                <span class="text-white font-semibold font-space text-sm md:text-base">5 Categories</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Prize Pool Section -->
+    <section class="relative z-10 mt-16 md:mt-32 px-4 md:px-6 max-w-7xl mx-auto mb-16 md:mb-32">
+        <div class="card-glass rounded-2xl md:rounded-3xl p-8 sm:p-10 md:p-12 lg:p-20 text-center card-shine overflow-hidden animate-fadeInUp">
+            <!-- Starfield Background -->
+            <div class="card-stars"></div>
+            
+            <!-- Animated Background Glow -->
+            <div class="absolute inset-0 bg-gradient-radial from-red-500/10 via-transparent to-transparent animate-pulse"></div>
+            
+            <div class="relative z-10">
+                <!-- Label -->
+                <div class="inline-block mb-4 md:mb-6">
+                    <span class="text-red-400 text-base sm:text-lg md:text-xl lg:text-2xl font-bold font-orbitron tracking-widest uppercase border-2 border-red-500/50 rounded-full px-4 sm:px-6 md:px-8 py-2 md:py-3 bg-red-900/20">
+                        Total Prize Pool
+                    </span>
+                </div>
+                
+                <!-- Massive Prize Amount -->
+                <div class="mb-6 md:mb-8">
+                    <div class="text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[12rem] font-black text-transparent bg-clip-text bg-gradient-to-b from-red-400 via-red-500 to-red-600 font-orbitron leading-none animate-float" style="text-shadow: 0 0 80px rgba(255, 51, 51, 0.5);">
+                        ₹75,000
+                    </div>
+                </div>
+                
+                <!-- Subtitle -->
+                <p class="text-gray-300 text-base sm:text-lg md:text-xl lg:text-2xl font-space mb-6 md:mb-8 px-2">
+                    Win big across <span class="text-white font-semibold">5 exciting domains</span>
+                </p>
+                
+                <!-- Prize Distribution Hint -->
+                <div class="flex flex-wrap justify-center gap-3 md:gap-4 mt-6 md:mt-10">
+                    <div class="bg-gradient-to-br from-red-900/30 to-red-800/10 border border-red-500/30 rounded-xl px-4 sm:px-5 md:px-6 py-3 md:py-4">
+                        <p class="text-red-400 font-bold text-base sm:text-lg font-orbitron">🥇 1st Place</p>
+                        <p class="text-white text-xs sm:text-sm font-space">Per Domain</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-red-900/30 to-red-800/10 border border-red-500/30 rounded-xl px-4 sm:px-5 md:px-6 py-3 md:py-4">
+                        <p class="text-red-400 font-bold text-base sm:text-lg font-orbitron">🥈 2nd Place</p>
+                        <p class="text-white text-xs sm:text-sm font-space">Per Domain</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-red-900/30 to-red-800/10 border border-red-500/30 rounded-xl px-4 sm:px-5 md:px-6 py-3 md:py-4">
+                        <p class="text-red-400 font-bold text-base sm:text-lg font-orbitron">🥉 3rd Place</p>
+                        <p class="text-white text-xs sm:text-sm font-space">Per Domain</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="relative z-10 mt-20 border-t border-red-500/20">
+        <div class="max-w-7xl mx-auto px-6 py-12">
+            
+            <!-- Main Footer Content -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+                
+                <!-- About Column -->
+                <div class="space-y-4">
+                    <h3 class="text-2xl font-bold text-white font-orbitron">
+                        <span class="text-red-500">HackForge</span> 2.0
+                    </h3>
+                    <p class="text-gray-400 font-space text-sm leading-relaxed">
+                        An innovation-driven hackathon bringing together passionate developers, designers, and innovators to transform ideas into reality.
+                    </p>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="space-y-4">
+                    <h4 class="text-lg font-bold text-white font-orbitron">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="#" class="text-gray-400 hover:text-red-400 transition-colors font-space text-sm">About</a>
+                        </li>
+                        <li>
+                            <a href="#" class="text-gray-400 hover:text-red-400 transition-colors font-space text-sm">Domains</a>
+                        </li>
+                        <li>
+                            <a href="#" class="text-gray-400 hover:text-red-400 transition-colors font-space text-sm">Event Details</a>
+                        </li>
+                        <li>
+                            <a href="#" class="text-gray-400 hover:text-red-400 transition-colors font-space text-sm">Register</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="space-y-4">
+                    <h4 class="text-lg font-bold text-white font-orbitron">Contact</h4>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-2">
+                            <svg class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            <span class="text-gray-400 font-space text-sm">ISL Engineering College</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="text-gray-400 font-space text-sm">hackforge@islec.edu</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                            </svg>
+                            <span class="text-gray-400 font-space text-sm">+91 XXXXX XXXXX</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Social Media & Organizers -->
+                <div class="space-y-4">
+                    <h4 class="text-lg font-bold text-white font-orbitron">Connect</h4>
+                    
+                    <!-- Social Icons -->
+                    <div class="flex gap-3">
+                        <a href="#" class="w-10 h-10 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 hover:border-red-500/50 rounded-lg flex items-center justify-center transition-all group">
+                            <svg class="w-5 h-5 text-red-400 group-hover:text-red-300" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 hover:border-red-500/50 rounded-lg flex items-center justify-center transition-all group">
+                            <svg class="w-5 h-5 text-red-400 group-hover:text-red-300" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 hover:border-red-500/50 rounded-lg flex items-center justify-center transition-all group">
+                            <svg class="w-5 h-5 text-red-400 group-hover:text-red-300" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 hover:border-red-500/50 rounded-lg flex items-center justify-center transition-all group">
+                            <svg class="w-5 h-5 text-red-400 group-hover:text-red-300" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                        </a>
+                    </div>
+
+                    <!-- Organizers -->
+                    <div class="mt-6">
+                        <p class="text-gray-400 font-space text-xs mb-2">Organized by</p>
+                        <div class="flex items-center gap-2 text-white font-space text-sm">
+                            <span class="text-red-400">E-Cell</span>
+                            <span class="text-gray-600">×</span>
+                            <span class="text-red-400">IIC</span>
+                            <span class="text-gray-600">×</span>
+                            <span class="text-red-400">MSC</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Bottom Bar -->
+            <div class="border-t border-red-500/20 pt-6 mt-6">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <p class="text-gray-400 font-space text-sm text-center md:text-left">
+                        © 2026 HackForge 2.0. All rights reserved.
+                    </p>
+                    <div class="flex gap-6">
+                        <a href="#" class="text-gray-400 hover:text-red-400 transition-colors font-space text-sm">Privacy Policy</a>
+                        <a href="#" class="text-gray-400 hover:text-red-400 transition-colors font-space text-sm">Terms of Service</a>
+                        <a href="#" class="text-gray-400 hover:text-red-400 transition-colors font-space text-sm">Code of Conduct</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </footer>
 
     <script>
         const canvas = document.getElementById('circuitCanvas');
@@ -730,6 +1151,89 @@
             resizeCanvas();
             generateCircuitPattern();
         });
+
+        // ===== 3D Card Mouse Tracking =====
+        const domainCards = document.querySelectorAll('.domain-card');
+
+        domainCards.forEach(card => {
+            // Create starfield for each card
+            createCardStarfield(card);
+
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // Calculate center position
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                // Calculate rotation angles (max 15 degrees)
+                const rotateX = ((y - centerY) / centerY) * -10;
+                const rotateY = ((x - centerX) / centerX) * 10;
+                
+                // Apply 3D transform
+                card.style.transform = `
+                    rotateX(${rotateX}deg) 
+                    rotateY(${rotateY}deg) 
+                    translateZ(20px)
+                    scale3d(1.02, 1.02, 1.02)
+                `;
+                
+                // Update box shadow based on tilt
+                const shadowX = rotateY * 2;
+                const shadowY = rotateX * -2;
+                card.style.boxShadow = `
+                    ${shadowX}px ${shadowY}px 40px rgba(0, 0, 0, 0.5),
+                    ${shadowX * 0.5}px ${shadowY * 0.5}px 20px rgba(255, 51, 51, 0.3),
+                    0 0 60px rgba(255, 51, 51, 0.2)
+                `;
+                
+                // Update shine position
+                const mouseXPercent = (x / rect.width) * 100;
+                const mouseYPercent = (y / rect.height) * 100;
+                card.style.setProperty('--mouse-x', `${mouseXPercent}%`);
+                card.style.setProperty('--mouse-y', `${mouseYPercent}%`);
+            });
+
+            card.addEventListener('mouseleave', () => {
+                // Reset transform
+                card.style.transform = 'rotateX(0deg) rotateY(0deg) translateZ(0px) scale3d(1, 1, 1)';
+                card.style.boxShadow = `
+                    0 8px 32px rgba(0, 0, 0, 0.4),
+                    0 2px 8px rgba(255, 51, 51, 0.1)
+                `;
+            });
+        });
+
+        // Create starfield background for cards
+        function createCardStarfield(card) {
+            const starsContainer = card.querySelector('.card-stars');
+            if (!starsContainer) return;
+            
+            const starCount = 30;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = Math.random() > 0.8 ? 'star bright' : 'star';
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.animationDelay = `${Math.random() * 3}s`;
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Initialize starfield for Event Details section
+        const eventDetailsCards = document.querySelectorAll('#eventDetailsSection .card-shine');
+        eventDetailsCards.forEach(card => {
+            createCardStarfield(card);
+        });
+
+        // Initialize starfield for Prize Pool section
+        const prizePoolCard = document.querySelector('section:has(.bg-gradient-radial) .card-shine');
+        if (prizePoolCard) {
+            createCardStarfield(prizePoolCard);
+        }
     </script>
 </body>
 </html>
